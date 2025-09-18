@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+  // Call backend to get token and store in localStorage, then go to home page
+  fetch('/generateToken', { method: 'POST', credentials: 'same-origin' })
+    .then(r => {
+      if (!r.ok) throw new Error('token error');
+      return r.json();
+    }).then(data => {
+      localStorage.setItem('jwt', data.token);
+      window.location.href = '/home.jsp';
+    }).catch(e => {
+      alert('Failed to get token: ' + e);
+      window.location.href = '/login';
+    });
+</script>
+</body>
+</html>
+
+
+
+<!DOCTYPE html>
+<html>
+<body>
+<h1 id="greet">Loading...</h1>
+<script>
+  const token = localStorage.getItem('jwt');
+  if (!token) { alert('Not logged in'); window.location.href='/login'; }
+
+  fetch('/api/home', {
+    method: 'GET',
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).then(r => {
+    if (r.status === 401) { alert('Unauthorized'); window.location.href='/login'; }
+    return r.text();
+  }).then(text => {
+    document.getElementById('greet').innerText = text;
+  }).catch(e => { console.error(e); alert('Error'); });
+</script>
+</body>
+</html>
